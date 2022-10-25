@@ -52,7 +52,7 @@ public class PredatoryBirdAudioSchedule {
                     log.error("Could not turn off station: {} ({})", device.getId(), device.getName());
                 }
             } catch (RuntimeException ex) {
-                log.error("Error while turning off station: {} ({}) : {}", device.getId(), device.getName(), ex);
+                log.error("Error while turning off station: {} ({}) : {}", device.getId(), device.getName(), ex.getMessage());
             }
         }
     }
