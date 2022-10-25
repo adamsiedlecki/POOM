@@ -8,22 +8,21 @@ import pl.adamsiedlecki.poom.configuration.devices.gen3.Gen3Device;
 import pl.adamsiedlecki.poom.configuration.devices.gen3.Gen3DevicesInfo;
 import pl.adamsiedlecki.poom.devices.StationGen3Service;
 
-import java.util.stream.Collectors;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class PredatoryBirdAudioSchedule {
+    private static final String BUSINESS_SERVICE_NAME = "Predatory bird station schedule";
 
     private final StationGen3Service stationGen3Service;
     private final Gen3DevicesInfo gen3DevicesInfo;
 
     @Scheduled(cron = "${predatory.bird.audio.on.cron}")
     public void devicesOn() {
-        var devices = gen3DevicesInfo.getDevices()
-                .stream()
-                .filter(device -> device.getTags().stream().anyMatch(tag -> tag.equals("predatoryBirdAudioStation")))
-                .toList();
+        log.info("{} - ON running", BUSINESS_SERVICE_NAME);
+        var devices = getPredatoryBirdAudioStations();
 
         for(Gen3Device device: devices) {
             try {
@@ -34,17 +33,15 @@ public class PredatoryBirdAudioSchedule {
                     log.error("Could not turn on station: {} ({})", device.getId(), device.getName());
                 }
             } catch (RuntimeException ex) {
-                log.error("Error while turning on station: {} ({}) : {}", device.getId(), device.getName(), ex);
+                log.error("Error while turning on station: {} ({}) : {}", device.getId(), device.getName(), ex.getMessage());
             }
         }
     }
 
     @Scheduled(cron = "${predatory.bird.audio.off.cron}")
     public void devicesOff() {
-        var devices = gen3DevicesInfo.getDevices()
-                .stream()
-                .filter(device -> device.getTags().stream().anyMatch(tag -> tag.equals("predatoryBirdAudioStation")))
-                .toList();
+        log.info("{} - OFF running", BUSINESS_SERVICE_NAME);
+        var devices = getPredatoryBirdAudioStations();
 
         for(Gen3Device device: devices) {
             try {
@@ -58,5 +55,12 @@ public class PredatoryBirdAudioSchedule {
                 log.error("Error while turning off station: {} ({}) : {}", device.getId(), device.getName(), ex);
             }
         }
+    }
+
+    private List<Gen3Device> getPredatoryBirdAudioStations() {
+        return gen3DevicesInfo.getDevices()
+                .stream()
+                .filter(device -> device.getTags().stream().anyMatch(tag -> tag.equals("predatoryBirdAudioStation")))
+                .toList();
     }
 }
