@@ -1,5 +1,8 @@
 package pl.adamsiedlecki.poom.configuration;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -15,11 +18,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BeanConfig {
 
-    private final MappingJackson2HttpMessageConverter customMappingJackson2HttpMessageConverter;
-
     @Bean
     @Primary
-    public RestTemplate restTemplate() {
+    public RestTemplate restTemplate(MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter) {
         RestTemplate restTemplate = new RestTemplateBuilder()
                 .setConnectTimeout(Duration.ofMillis(2000))
                 .setReadTimeout(Duration.ofMillis(30_000))
@@ -29,8 +30,25 @@ public class BeanConfig {
                 .stream()
                 .filter(c-> !(c instanceof MappingJackson2HttpMessageConverter))
                 .collect(Collectors.toList());
-        messageConvertersExceptDefaultJackson.add(customMappingJackson2HttpMessageConverter);
+        messageConvertersExceptDefaultJackson.add(mappingJackson2HttpMessageConverter);
         restTemplate.setMessageConverters(messageConvertersExceptDefaultJackson);
         return restTemplate;
+    }
+
+    @Bean
+    @Primary
+    public MappingJackson2HttpMessageConverter jacksonMessageConverter(ObjectMapper objectMapper) {
+        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+        converter.setObjectMapper(objectMapper);
+        return converter;
+    }
+
+    @Bean
+    @Primary
+    public ObjectMapper getObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
+                .registerModule(new JavaTimeModule())
+                .findAndRegisterModules();
     }
 }
