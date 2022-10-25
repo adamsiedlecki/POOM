@@ -1,0 +1,81 @@
+swagger: "2.0"
+info:
+  description: "Station gateway generation 3 API"
+  version: "1.0.0"
+  title: ""
+tags:
+  - name: "Gen3Devices"
+    externalDocs:
+      description: "Find out more"
+      url: "https://github.com/adamsiedlecki/OTM"
+schemes:
+  - "https"
+  - "http"
+paths:
+  /sendRequest:
+    post:
+      tags:
+        - "Gen3Devices"
+      summary: "Send generic request to gateway"
+      operationId: "sendGenericRequest"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "GenericMessageInput"
+          description: Body of the request
+          required: true
+          schema:
+            $ref: "#/definitions/GenericMessageInput"
+      responses:
+        "200":
+          description: "Everything correct, there is a reply 4 you!"
+          schema:
+            $ref: "#/definitions/GenericMessageOutput"
+
+definitions:
+  GenericMessageInput:
+    type: "object"
+    properties:
+      tid:
+        description: "target id"
+        type: integer
+        format: int64
+      cmm:
+        description: "command"
+        enum:
+          - tR          # temperature request
+          - vR          # voltage request
+          - hR          # humidity request
+          - devOff      # turn device off
+          - devOn       # turn device on
+          - devStatus   # get device status
+
+    required:
+      - tid
+      - cmm
+
+  GenericMessageOutput:
+    type: "object"
+    properties:
+      a:
+        description: "station id"
+        type: integer
+        format: int64
+      tp:
+        description: "temperature"
+        type: number
+      v:
+        description: "battery voltage"
+        type: number
+      hu:
+        description: "humidity"
+        type: number
+      res:
+        description: "text response"
+        type: string
+      error:
+        description: "error"
+        type: string
