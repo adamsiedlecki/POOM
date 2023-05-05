@@ -1,7 +1,7 @@
 package pl.adamsiedlecki.poom.scheduled;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import pl.adamsiedlecki.poom.configuration.devices.gen3.Gen3Device;
@@ -11,13 +11,22 @@ import pl.adamsiedlecki.poom.devices.StationGen3Service;
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class PredatoryBirdAudioSchedule {
     private static final String BUSINESS_SERVICE_NAME = "Predatory bird station schedule";
 
     private final StationGen3Service stationGen3Service;
     private final Gen3DevicesInfo gen3DevicesInfo;
+
+    public PredatoryBirdAudioSchedule(StationGen3Service stationGen3Service,
+                                      Gen3DevicesInfo gen3DevicesInfo,
+                                      @Value("${predatory.bird.audio.on.cron}") String onCron,
+                                      @Value("${predatory.bird.audio.off.cron}") String offCron) {
+        this.stationGen3Service = stationGen3Service;
+        this.gen3DevicesInfo = gen3DevicesInfo;
+        log.info("Started with onCron: " + onCron);
+        log.info("Started with offCron: " + offCron);
+    }
 
     @Scheduled(cron = "${predatory.bird.audio.on.cron}")
     public void devicesOn() {
